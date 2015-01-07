@@ -82,7 +82,24 @@ static const NSUInteger DefaultCapacity = 10;
 }
 
 - (void)removeObjectForKey:(id)key {
+    if (!key) {
+        return;
+    }
     
+    @synchronized(self) {
+        [self.dictionary removeObjectForKey:key];
+        NSUInteger index = [self.stack indexOfObject:key];
+        if (index != NSNotFound) {
+            [self.stack removeObjectAtIndex:index];
+        }
+    }
+}
+
+- (void)removeAllObjects {
+    @synchronized(self) {
+        [self.dictionary removeAllObjects];
+        [self.stack removeAllObjects];
+    }
 }
 
 - (NSUInteger)count {
