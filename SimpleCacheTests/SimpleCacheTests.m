@@ -40,6 +40,7 @@
     
     cache[@"KEY_1"] = @"VALUE_1";
     XCTAssertEqualObjects(cache[@"KEY_1"], @"VALUE_1");
+    XCTAssertEqual(cache.count, 1);
 }
 
 - (void)testOverwrite {
@@ -65,6 +66,8 @@
     XCTAssertNil(cache[@"KEY_1"]);
     XCTAssertEqualObjects(cache[@"KEY_2"], @"VALUE_2");
     XCTAssertEqualObjects(cache[@"KEY_3"], @"VALUE_3");
+    
+    XCTAssertEqual(cache.count, 2);
 }
 
 - (void)testSetSameKey1 {
@@ -77,6 +80,8 @@
     
     XCTAssertEqualObjects(cache[@"KEY_1"], @"VALUE_1");
     XCTAssertEqualObjects(cache[@"KEY_2"], @"VALUE_2");
+    
+    XCTAssertEqual(cache.count, 2);
 }
 
 - (void)testSetSameKey2 {
@@ -90,6 +95,8 @@
     
     XCTAssertEqualObjects(cache[@"KEY_1"], @"VALUE_1");
     XCTAssertEqualObjects(cache[@"KEY_2"], @"VALUE_2");
+    
+    XCTAssertEqual(cache.count, 2);
 }
 
 - (void)testSetSameKey3 {
@@ -104,6 +111,8 @@
     XCTAssertEqualObjects(cache[@"KEY_1"], @"VALUE_1");
     XCTAssertNil(cache[@"KEY_2"]);
     XCTAssertEqualObjects(cache[@"KEY_3"], @"VALUE_3");
+    
+    XCTAssertEqual(cache.count, 2);
 }
 
 - (void)testGet {
@@ -116,6 +125,8 @@
     XCTAssertEqualObjects(cache[@"KEY_1"], @"VALUE_1");
     XCTAssertNil(cache[@"KEY_2"]);
     XCTAssertEqualObjects(cache[@"KEY_3"], @"VALUE_3");
+    
+    XCTAssertEqual(cache.count, 2);
 }
 
 - (void)testGetAbsent {
@@ -135,6 +146,59 @@
     XCTAssertEqualObjects(cache[@"KEY_1"], @"VALUE_1");
     XCTAssertNil(cache[@"KEY_2"]);
     XCTAssertEqualObjects(cache[@"KEY_3"], @"VALUE_3");
+    
+    XCTAssertEqual(cache.count, 2);
+}
+
+- (void)testRemove {
+    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
+    
+    cache[@"KEY_1"] = @"VALUE_1";
+    cache[@"KEY_2"] = @"VALUE_2";
+    
+    [cache removeObjectForKey:@"KEY_2"];
+    
+    cache[@"KEY_3"] = @"VALUE_3";
+    
+    XCTAssertEqualObjects(cache[@"KEY_1"], @"VALUE_1");
+    XCTAssertNil(cache[@"KEY_2"]);
+    XCTAssertEqualObjects(cache[@"KEY_3"], @"VALUE_3");
+    
+    XCTAssertEqual(cache.count, 2);
+}
+
+- (void)testRemoveAbsent {
+    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
+    
+    cache[@"KEY_1"] = @"VALUE_1";
+    cache[@"KEY_2"] = @"VALUE_2";
+    
+    [cache removeObjectForKey:@"KEY_3"];
+    [cache removeObjectForKey:@"KEY_4"];
+    
+    cache[@"KEY_3"] = @"VALUE_3";
+    
+    XCTAssertNil(cache[@"KEY_1"]);
+    XCTAssertEqualObjects(cache[@"KEY_2"], @"VALUE_2");
+    XCTAssertEqualObjects(cache[@"KEY_3"], @"VALUE_3");
+    
+    XCTAssertEqual(cache.count, 2);
+}
+
+- (void)testRemoveAll {
+    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
+    
+    cache[@"KEY_1"] = @"VALUE_1";
+    cache[@"KEY_2"] = @"VALUE_2";
+    cache[@"KEY_3"] = @"VALUE_3";
+    
+    [cache removeAllObjects];
+    
+    XCTAssertNil(cache[@"KEY_1"]);
+    XCTAssertNil(cache[@"KEY_2"]);
+    XCTAssertNil(cache[@"KEY_3"]);
+    
+    XCTAssertEqual(cache.count, 0);
 }
 
 - (void)testThreadSafety {
@@ -185,18 +249,18 @@
 }
 
 - (void)testPerformance {
-    SimpleCache *cache = [[SimpleCache alloc] init];
+    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:3000];
     
     [self measureBlock:^{
-        for (int i = 0; i < 1500; i++) {
-            NSString *key = [NSString stringWithFormat:@"%d", arc4random()];
+        for (int i = 0; i < 3000; i++) {
+            NSString *key = [NSString stringWithFormat:@"%d", arc4random_uniform(3000)];
             NSString *object = key;
             cache[key] = object;
         }
         
         NSMutableArray *array = [[NSMutableArray alloc] init];
-        for (int i = 0; i < 1500; i++) {
-            NSString *key = [NSString stringWithFormat:@"%02d", i];
+        for (int i = 0; i < 3000; i++) {
+            NSString *key = [NSString stringWithFormat:@"%d", arc4random_uniform(3000)];
             NSString *object = cache[key];
             if (object) {
                 [array addObject:object];
