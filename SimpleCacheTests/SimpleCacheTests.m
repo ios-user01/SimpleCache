@@ -188,14 +188,14 @@
     SimpleCache *cache = [[SimpleCache alloc] init];
     
     [self measureBlock:^{
-        for (int i = 0; i < 1500; i++) {
+        for (int i = 0; i < 3000; i++) {
             NSString *key = [NSString stringWithFormat:@"%d", arc4random()];
             NSString *object = key;
             cache[key] = object;
         }
         
         NSMutableArray *array = [[NSMutableArray alloc] init];
-        for (int i = 0; i < 1500; i++) {
+        for (int i = 0; i < 3000; i++) {
             NSString *key = [NSString stringWithFormat:@"%02d", i];
             NSString *object = cache[key];
             if (object) {

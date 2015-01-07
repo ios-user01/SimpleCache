@@ -7,6 +7,7 @@
 //
 
 #import "SimpleCache.h"
+#import <libkern/OSAtomic.h>
 
 static const NSUInteger DefaultCapacity = 10;
 
@@ -19,7 +20,9 @@ static const NSUInteger DefaultCapacity = 10;
 
 @end
 
-@implementation SimpleCache
+@implementation SimpleCache {
+    OSSpinLock _lock;
+}
 
 - (instancetype)init {
     return [self initWithCapacity:DefaultCapacity];
@@ -49,14 +52,16 @@ static const NSUInteger DefaultCapacity = 10;
         return nil;
     }
     
-    @synchronized(self) {
-        id object = self.dictionary[key];
-        
-        [self.stack removeObject:key];
-        [self.stack insertObject:key atIndex:0];
-        
-        return object;
-    }
+    OSSpinLockLock(&_lock);
+    
+    id object = self.dictionary[key];
+    
+    [self.stack removeObject:key];
+    [self.stack insertObject:key atIndex:0];
+    
+    OSSpinLockUnlock(&_lock);
+    
+    return object;
 }
 
 - (void)setObject:(id)object forKeyedSubscript:(id<NSCopying>)key {
@@ -64,21 +69,23 @@ static const NSUInteger DefaultCapacity = 10;
         return;
     }
     
-    @synchronized(self) {
-        [self.dictionary setObject:object forKey:key];
-        
-        NSUInteger index = [self.stack indexOfObject:key];
-        if (index != NSNotFound) {
-            [self.stack removeObjectAtIndex:index];
-        }
-        [self.stack insertObject:key atIndex:0];
-        
-        if (self.stack.count > self.capacity) {
-            id object = self.stack.lastObject;
-            [self.dictionary removeObjectForKey:object];
-            [self.stack removeObject:object];
-        }
+    OSSpinLockLock(&_lock);
+    
+    [self.dictionary setObject:object forKey:key];
+    
+    NSUInteger index = [self.stack indexOfObject:key];
+    if (index != NSNotFound) {
+        [self.stack removeObjectAtIndex:index];
     }
+    [self.stack insertObject:key atIndex:0];
+    
+    if (self.stack.count > self.capacity) {
+        id object = self.stack.lastObject;
+        [self.dictionary removeObjectForKey:object];
+        [self.stack removeObject:object];
+    }
+    
+    OSSpinLockUnlock(&_lock);
 }
 
 - (void)removeObjectForKey:(id)key {
