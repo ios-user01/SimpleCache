@@ -17,6 +17,8 @@ static const NSUInteger DefaultCapacity = 10;
 
 @property (nonatomic) NSUInteger capacity;
 
+@property (nonatomic) dispatch_queue_t queue;
+
 @end
 
 @implementation SimpleCache
@@ -32,6 +34,8 @@ static const NSUInteger DefaultCapacity = 10;
         _stack = [[NSMutableArray alloc] initWithCapacity:capacity];
         
         _capacity = capacity;
+        
+        _queue = dispatch_queue_create(NULL, DISPATCH_QUEUE_CONCURRENT);
     }
     return self;
 }
@@ -49,14 +53,15 @@ static const NSUInteger DefaultCapacity = 10;
         return nil;
     }
     
-    @synchronized(self) {
-        id object = self.dictionary[key];
+    __block id object;
+    dispatch_sync(self.queue, ^{
+        object = self.dictionary[key];
         
         [self.stack removeObject:key];
         [self.stack insertObject:key atIndex:0];
-        
-        return object;
-    }
+    });
+    
+    return object;
 }
 
 - (void)setObject:(id)object forKeyedSubscript:(id<NSCopying>)key {
@@ -64,7 +69,7 @@ static const NSUInteger DefaultCapacity = 10;
         return;
     }
     
-    @synchronized(self) {
+    dispatch_barrier_async(self.queue, ^{
         [self.dictionary setObject:object forKey:key];
         
         NSUInteger index = [self.stack indexOfObject:key];
@@ -78,7 +83,7 @@ static const NSUInteger DefaultCapacity = 10;
             [self.dictionary removeObjectForKey:object];
             [self.stack removeObject:object];
         }
-    }
+    });
 }
 
 - (void)removeObjectForKey:(id)key {
