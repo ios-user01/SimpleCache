@@ -129,7 +129,7 @@
     XCTAssertEqual(cache.count, 2);
 }
 
-- (void)testGetAbsent {
+- (void)testGetAbsent1 {
     SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
     
     cache[@"KEY_1"] = @"VALUE_1";
@@ -145,6 +145,24 @@
     
     XCTAssertEqualObjects(cache[@"KEY_1"], @"VALUE_1");
     XCTAssertNil(cache[@"KEY_2"]);
+    XCTAssertEqualObjects(cache[@"KEY_3"], @"VALUE_3");
+    
+    XCTAssertEqual(cache.count, 2);
+}
+
+- (void)testGetAbsent2 {
+    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
+    
+    XCTAssertNil(cache[@"KEY_1"]);
+    XCTAssertNil(cache[@"KEY_2"]);
+    XCTAssertNil(cache[@"KEY_3"]);
+    
+    cache[@"KEY_1"] = @"VALUE_1";
+    cache[@"KEY_2"] = @"VALUE_2";
+    cache[@"KEY_3"] = @"VALUE_3";
+    
+    XCTAssertNil(cache[@"KEY_1"]);
+    XCTAssertEqualObjects(cache[@"KEY_2"], @"VALUE_2");
     XCTAssertEqualObjects(cache[@"KEY_3"], @"VALUE_3");
     
     XCTAssertEqual(cache.count, 2);
