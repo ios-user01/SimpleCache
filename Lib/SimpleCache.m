@@ -52,8 +52,10 @@ static const NSUInteger DefaultCapacity = 10;
     @synchronized(self) {
         id object = self.dictionary[key];
         
-        [self.stack removeObject:key];
-        [self.stack insertObject:key atIndex:0];
+        if (object) {
+            [self.stack removeObject:key];
+            [self.stack insertObject:key atIndex:0];
+        }
         
         return object;
     }
