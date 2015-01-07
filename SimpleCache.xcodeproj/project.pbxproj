@@ -12,9 +12,9 @@
 		1414C8661A5D8C7400AE7077 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1414C8651A5D8C7400AE7077 /* ViewController.m */; };
 		1414C8691A5D8C7400AE7077 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1414C8671A5D8C7400AE7077 /* Main.storyboard */; };
 		1414C86B1A5D8C7400AE7077 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1414C86A1A5D8C7400AE7077 /* Images.xcassets */; };
-		1414C86E1A5D8C7400AE7077 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1414C86C1A5D8C7400AE7077 /* LaunchScreen.xib */; };
 		1414C87A1A5D8C7400AE7077 /* SimpleCacheTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1414C8791A5D8C7400AE7077 /* SimpleCacheTests.m */; };
 		1414C8881A5D946A00AE7077 /* SimpleCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 1414C8871A5D946A00AE7077 /* SimpleCache.m */; };
+		146383F81A5DEEE100073904 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 146383F61A5DEEE100073904 /* LaunchScreen.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,12 +37,12 @@
 		1414C8651A5D8C7400AE7077 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		1414C8681A5D8C7400AE7077 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		1414C86A1A5D8C7400AE7077 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		1414C86D1A5D8C7400AE7077 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		1414C8731A5D8C7400AE7077 /* SimpleCacheTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SimpleCacheTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1414C8781A5D8C7400AE7077 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1414C8791A5D8C7400AE7077 /* SimpleCacheTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SimpleCacheTests.m; sourceTree = "<group>"; };
 		1414C8861A5D946A00AE7077 /* SimpleCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SimpleCache.h; path = Lib/SimpleCache.h; sourceTree = "<group>"; };
 		1414C8871A5D946A00AE7077 /* SimpleCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SimpleCache.m; path = Lib/SimpleCache.m; sourceTree = "<group>"; };
+		146383F71A5DEEE100073904 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,7 +90,7 @@
 				1414C8641A5D8C7400AE7077 /* ViewController.h */,
 				1414C8651A5D8C7400AE7077 /* ViewController.m */,
 				1414C8671A5D8C7400AE7077 /* Main.storyboard */,
-				1414C86C1A5D8C7400AE7077 /* LaunchScreen.xib */,
+				146383F61A5DEEE100073904 /* LaunchScreen.xib */,
 				1414C86A1A5D8C7400AE7077 /* Images.xcassets */,
 				1414C85D1A5D8C7400AE7077 /* Supporting Files */,
 			);
@@ -142,6 +142,7 @@
 				1414C8561A5D8C7400AE7077 /* Sources */,
 				1414C8571A5D8C7400AE7077 /* Frameworks */,
 				1414C8581A5D8C7400AE7077 /* Resources */,
+				146383F31A5DED4A00073904 /* Create Coveralls Script */,
 			);
 			buildRules = (
 			);
@@ -213,7 +214,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1414C8691A5D8C7400AE7077 /* Main.storyboard in Resources */,
-				1414C86E1A5D8C7400AE7077 /* LaunchScreen.xib in Resources */,
+				146383F81A5DEEE100073904 /* LaunchScreen.xib in Resources */,
 				1414C86B1A5D8C7400AE7077 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -226,6 +227,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		146383F31A5DED4A00073904 /* Create Coveralls Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Create Coveralls Script";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "Script/create-coveralls-script.sh";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		1414C8561A5D8C7400AE7077 /* Sources */ = {
@@ -266,10 +284,10 @@
 			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
-		1414C86C1A5D8C7400AE7077 /* LaunchScreen.xib */ = {
+		146383F61A5DEEE100073904 /* LaunchScreen.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				1414C86D1A5D8C7400AE7077 /* Base */,
+				146383F71A5DEEE100073904 /* Base */,
 			);
 			name = LaunchScreen.xib;
 			sourceTree = "<group>";
@@ -311,7 +329,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -346,7 +364,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
@@ -357,6 +375,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				INFOPLIST_FILE = SimpleCache/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -367,6 +386,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				INFOPLIST_FILE = SimpleCache/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -426,6 +446,7 @@
 				1414C87F1A5D8C7400AE7077 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		1414C8801A5D8C7400AE7077 /* Build configuration list for PBXNativeTarget "SimpleCacheTests" */ = {
 			isa = XCConfigurationList;
@@ -434,6 +455,7 @@
 				1414C8821A5D8C7400AE7077 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

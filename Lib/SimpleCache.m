@@ -33,7 +33,7 @@ static const NSUInteger DefaultCapacity = 10;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"[%@: %@]", self.key, self.value];
+    return [NSString stringWithFormat:@"[%@: %@]", _key, _value];
 }
 
 @end
@@ -48,41 +48,41 @@ static const NSUInteger DefaultCapacity = 10;
 @implementation List
 
 - (Node *)lastObject {
-    return self.lastNode;
+    return _lastNode;
 }
 
 - (void)insertFirst:(Node *)node {
-    if (!self.firstNode) {
-        self.firstNode = node;
-        self.lastNode = node;
+    if (!_firstNode) {
+        _firstNode = node;
+        _lastNode = node;
         node.previousNode = nil;
         node.nextNode = nil;
     } else {
-        node.nextNode = self.firstNode;
-        self.firstNode.previousNode = node;
-        self.firstNode = node;
+        node.nextNode = _firstNode;
+        _firstNode.previousNode = node;
+        _firstNode = node;
     }
 }
 
 - (void)removeObject:(Node *)node {
     if (!node.previousNode) {
-        self.firstNode = node.nextNode;
+        _firstNode = node.nextNode;
     } else {
         node.previousNode.nextNode = node.nextNode;
     }
     if (!node.nextNode) {
-        self.lastNode = node.previousNode;
+        _lastNode = node.previousNode;
     } else {
         node.nextNode.previousNode = node.previousNode;
     }
 }
 
 - (void)removeLastObject {
-    [self removeObject:self.lastNode];
+    [self removeObject:_lastNode];
 }
 
 - (void)removeAllObjects {
-    Node *node = self.firstNode;
+    Node *node = _firstNode;
     while (node) {
         node = node.nextNode;
         [self removeObject:node];
@@ -93,7 +93,7 @@ static const NSUInteger DefaultCapacity = 10;
     if (state->state == 0) {
         state->mutationsPtr = &state->extra[0];
         state->state = 1;
-        state->extra[1] = (long)self.firstNode;
+        state->extra[1] = (long)_firstNode;
     }
     
     NSUInteger count = 0;
@@ -121,7 +121,7 @@ static const NSUInteger DefaultCapacity = 10;
 - (NSString *)description {
     NSMutableString *string = [[NSMutableString alloc] initWithString:@"(\n"];
     for (Node *node in self) {
-        [string appendFormat:@"  %@,\n", node];
+        [string appendFormat:@"    %@,\n", node];
     }
     [string appendString:@")"];
     return string.copy;
@@ -131,26 +131,26 @@ static const NSUInteger DefaultCapacity = 10;
 
 @interface SimpleCache ()
 
+@property (nonatomic, readwrite) NSUInteger limit;
+
 @property (nonatomic) NSMutableDictionary *dictionary;
 @property (nonatomic) List *list;
-
-@property (nonatomic) NSUInteger capacity;
 
 @end
 
 @implementation SimpleCache
 
 - (instancetype)init {
-    return [self initWithCapacity:DefaultCapacity];
+    return [self initWithLimit:DefaultCapacity];
 }
 
-- (instancetype)initWithCapacity:(NSUInteger)capacity {
+- (instancetype)initWithLimit:(NSUInteger)limit {
     self = [super init];
     if (self) {
-        _dictionary = [[NSMutableDictionary alloc] initWithCapacity:capacity];
+        _dictionary = [[NSMutableDictionary alloc] initWithCapacity:limit];
         _list = [[List alloc] init];
         
-        _capacity = capacity;
+        _limit = limit;
     }
     return self;
 }
@@ -169,11 +169,11 @@ static const NSUInteger DefaultCapacity = 10;
     }
     
     @synchronized(self) {
-        Node *node = self.dictionary[key];
+        Node *node = _dictionary[key];
         
         if (node) {
-            [self.list removeObject:node];
-            [self.list insertFirst:node];
+            [_list removeObject:node];
+            [_list insertFirst:node];
         }
         
         return node.value;
@@ -186,25 +186,22 @@ static const NSUInteger DefaultCapacity = 10;
     }
     
     @synchronized(self) {
-        Node *node = self.dictionary[key];
+        Node *node = _dictionary[key];
         
         if (node) {
             node.value = object;
-            
-            [self.list removeObject:node];
-            [self.list insertFirst:node];
+            [_list removeObject:node];
         } else {
             node = [[Node alloc] initWithKey:key value:object];
-            
-            [self.list insertFirst:node];
         }
         
-        [self.dictionary setObject:node forKey:key];
+        [_dictionary setObject:node forKey:key];
+        [_list insertFirst:node];
         
-        if (self.dictionary.count > self.capacity) {
-            Node *last = [self.list lastObject];
-            [self.dictionary removeObjectForKey:last.key];
-            [self.list removeLastObject];
+        if (_dictionary.count > _limit) {
+            Node *lastObject = [_list lastObject];
+            [_dictionary removeObjectForKey:lastObject.key];
+            [_list removeLastObject];
         }
     }
 }
@@ -215,39 +212,53 @@ static const NSUInteger DefaultCapacity = 10;
     }
     
     @synchronized(self) {
-        Node *node = self.dictionary[key];
+        Node *node = _dictionary[key];
         if (node) {
-            [self.dictionary removeObjectForKey:key];
-            [self.list removeObject:node];
+            [_dictionary removeObjectForKey:key];
+            [_list removeObject:node];
         }
     }
 }
 
 - (void)removeAllObjects {
     @synchronized(self) {
-        [self.dictionary removeAllObjects];
-        [self.list removeAllObjects];
+        [_dictionary removeAllObjects];
+        [_list removeAllObjects];
     }
 }
 
 - (NSUInteger)count {
-    return self.dictionary.count;
+    @synchronized(self) {
+        return _dictionary.count;
+    }
 }
 
-#pragma mark -
-
 - (NSArray *)allKeys {
-    return self.dictionary.allKeys;
+    @synchronized(self) {
+        return _dictionary.allKeys;
+    }
+}
+
+- (NSArray *)allValues {
+    @synchronized(self) {
+        NSMutableArray *array = [[NSMutableArray alloc] init];
+        for (Node *node in _list) {
+            [array addObject:node.value];
+        }
+        return array.copy;
+    }
 }
 
 - (id)peekObjectForKey:(id)key {
-    return self.dictionary[key];
+    @synchronized(self) {
+        return _dictionary[key];
+    }
 }
 
 #pragma mark -
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@", self.list];
+    return [NSString stringWithFormat:@"%@", _list];
 }
 
 @end

@@ -56,7 +56,7 @@
 }
 
 - (void)testEvict {
-    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
     
     cache[@"KEY_1"] = @"VALUE_1";
     cache[@"KEY_2"] = @"VALUE_2";
@@ -71,7 +71,7 @@
 }
 
 - (void)testSetSameKey1 {
-    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
     
     cache[@"KEY_1"] = @"VALUE_1";
     cache[@"KEY_2"] = @"VALUE_2";
@@ -85,7 +85,7 @@
 }
 
 - (void)testSetSameKey2 {
-    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
     
     cache[@"KEY_1"] = @"VALUE_1";
     cache[@"KEY_2"] = @"VALUE_2";
@@ -100,7 +100,7 @@
 }
 
 - (void)testSetSameKey3 {
-    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
     
     cache[@"KEY_1"] = @"VALUE_1";
     cache[@"KEY_2"] = @"VALUE_2";
@@ -116,7 +116,7 @@
 }
 
 - (void)testGet {
-    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
     
     cache[@"KEY_1"] = @"VALUE_1";
     cache[@"KEY_2"] = @"VALUE_2";
@@ -130,7 +130,7 @@
 }
 
 - (void)testGetAbsent1 {
-    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
     
     cache[@"KEY_1"] = @"VALUE_1";
     cache[@"KEY_2"] = @"VALUE_2";
@@ -151,7 +151,7 @@
 }
 
 - (void)testGetAbsent2 {
-    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
     
     XCTAssertNil(cache[@"KEY_1"]);
     XCTAssertNil(cache[@"KEY_2"]);
@@ -169,7 +169,7 @@
 }
 
 - (void)testRemove {
-    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
     
     cache[@"KEY_1"] = @"VALUE_1";
     cache[@"KEY_2"] = @"VALUE_2";
@@ -186,7 +186,7 @@
 }
 
 - (void)testRemoveAbsent {
-    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
     
     cache[@"KEY_1"] = @"VALUE_1";
     cache[@"KEY_2"] = @"VALUE_2";
@@ -204,7 +204,7 @@
 }
 
 - (void)testRemoveAll {
-    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:2];
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
     
     cache[@"KEY_1"] = @"VALUE_1";
     cache[@"KEY_2"] = @"VALUE_2";
@@ -267,18 +267,19 @@
 }
 
 - (void)testPerformance {
-    SimpleCache *cache = [[SimpleCache alloc] initWithCapacity:3000];
+    const int count = 10000;
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:count];
     
     [self measureBlock:^{
-        for (int i = 0; i < 3000; i++) {
-            NSString *key = [NSString stringWithFormat:@"%d", arc4random_uniform(3000)];
+        for (int i = 0; i < count; i++) {
+            NSString *key = [NSString stringWithFormat:@"%d", arc4random_uniform(count)];
             NSString *object = key;
             cache[key] = object;
         }
         
         NSMutableArray *array = [[NSMutableArray alloc] init];
-        for (int i = 0; i < 3000; i++) {
-            NSString *key = [NSString stringWithFormat:@"%d", arc4random_uniform(3000)];
+        for (int i = 0; i < count; i++) {
+            NSString *key = [NSString stringWithFormat:@"%d", arc4random_uniform(count)];
             NSString *object = cache[key];
             if (object) {
                 [array addObject:object];

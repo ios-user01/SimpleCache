@@ -10,13 +10,14 @@
 
 @interface SimpleCache : NSObject
 
-@property (nonatomic, readonly) NSUInteger capacity;
+@property (nonatomic, readonly) NSUInteger limit;
 @property (nonatomic, readonly) NSUInteger count;
 
 @property (nonatomic, readonly) NSArray *allKeys;
+@property (nonatomic, readonly) NSArray *allValues;
 
 - (instancetype)init;
-- (instancetype)initWithCapacity:(NSUInteger)capacity;
+- (instancetype)initWithLimit:(NSUInteger)limit;
 
 - (id)objectForKey:(id)key;
 - (void)setObject:(id)object forKey:(id<NSCopying>)key;
