@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 kishikawa katsumi. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 @interface SimpleCache : NSObject
 

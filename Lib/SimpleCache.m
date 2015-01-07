@@ -151,8 +151,14 @@ static const NSUInteger DefaultCapacity = 10;
         _list = [[List alloc] init];
         
         _limit = limit;
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didReceiveMemoryWarning:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
     }
     return self;
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
 }
 
 - (id)objectForKey:(id)key {
@@ -254,6 +260,11 @@ static const NSUInteger DefaultCapacity = 10;
         return _dictionary[key];
     }
 }
+
+- (void)didReceiveMemoryWarning:(NSNotification *)notification {
+    [self removeAllObjects];
+}
+
 
 #pragma mark -
 
