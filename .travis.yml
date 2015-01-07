@@ -6,6 +6,9 @@ script:
   - bundle exec rake test
 after_success:
   - ./Script/coveralls.sh
+branches:
+  only:
+    - master
 env:
   global:
     - LANG=en_US.UTF-8
