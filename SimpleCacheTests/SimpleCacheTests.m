@@ -274,8 +274,10 @@
     XCTAssertEqualObjects(allValues, (@[@"VALUE_3", @"VALUE_2"]));
 }
 
-- (void)testThreadSafety {
+- (void)testThreadSafety1 {
     SimpleCache *cache = [[SimpleCache alloc] init];
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"join"];
     
     dispatch_group_t group = dispatch_group_create();
     dispatch_queue_t queue = dispatch_queue_create(NULL, DISPATCH_QUEUE_CONCURRENT);
@@ -294,16 +296,57 @@
     });
     
     dispatch_group_notify(group, queue, ^{
+        [expectation fulfill];
+        
         NSArray *allKeys = cache.allKeys;
         for (id key in allKeys) {
             XCTAssertEqualObjects(key, cache[key]);
         }
+        XCTAssertEqual(cache.count, 10);
     });
+    
+    [self waitForExpectationsWithTimeout:30.0 handler:nil];
+}
+
+- (void)testThreadSafety2 {
+    SimpleCache *cache = [[SimpleCache alloc] init];
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"join"];
+    
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_queue_t queue = dispatch_queue_create(NULL, DISPATCH_QUEUE_CONCURRENT);
+    
+    for (int i = 0; i < 10; i++) {
+        dispatch_group_async(group, queue, ^{
+            for (int j = 0; j < 10000; j++) {
+                NSString *key = [NSString stringWithFormat:@"%d", arc4random_uniform(100)];
+                NSString *object = key;
+                cache[key] = object;
+                
+                key = [NSString stringWithFormat:@"%d", arc4random_uniform(100)];
+                object = cache[key];
+                
+                cache[key] = object;
+            }
+        });
+    }
+    
+    dispatch_group_notify(group, queue, ^{
+        [expectation fulfill];
+        
+        NSArray *allKeys = cache.allKeys;
+        for (id key in allKeys) {
+            XCTAssertEqualObjects(key, cache[key]);
+        }
+        XCTAssertEqual(cache.count, 10);
+    });
+    
+    [self waitForExpectationsWithTimeout:30.0 handler:nil];
 }
 
 - (void)setManyObjects:(SimpleCache *)cache {
-    for (int i = 0; i < 1000000; i++) {
-        NSString *key = [NSString stringWithFormat:@"%d", arc4random()];
+    for (int i = 0; i < 10000; i++) {
+        NSString *key = [NSString stringWithFormat:@"%d", arc4random_uniform(100)];
         NSString *object = key;
         cache[key] = object;
     }
@@ -311,8 +354,8 @@
 
 - (NSArray *)getManyObjects:(SimpleCache *)cache {
     NSMutableArray *array = [[NSMutableArray alloc] init];
-    for (int i = 0; i < 1000000; i++) {
-        NSString *key = [NSString stringWithFormat:@"%02d", i];
+    for (int i = 0; i < 10000; i++) {
+        NSString *key = [NSString stringWithFormat:@"%02d", arc4random_uniform(100)];
         NSString *object = cache[key];
         if (object) {
             [array addObject:object];

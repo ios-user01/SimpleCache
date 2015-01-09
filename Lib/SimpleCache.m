@@ -84,6 +84,8 @@ static const NSUInteger DefaultLimit = 10;
     } else {
         node.nextNode.previousNode = node.previousNode;
     }
+    node.previousNode = nil;
+    node.nextNode = nil;
 }
 
 - (void)removeLastObject {
@@ -173,6 +175,8 @@ static const NSUInteger DefaultLimit = 10;
 }
 
 - (void)dealloc {
+    [self cancelAllDownloads];
+    [_session invalidateAndCancel];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
 }
 
