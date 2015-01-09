@@ -8,6 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ViewController : UIViewController
+@interface ViewController : UITableViewController
+
+@end
+
+@interface ImageCell : UITableViewCell
+
+@property (nonatomic) IBOutlet UIImageView *photoView;
+@property (nonatomic) NSURL *imageURL;
 
 @end

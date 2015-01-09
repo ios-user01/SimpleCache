@@ -8,7 +8,7 @@
 
 #import "SimpleCache.h"
 
-static const NSUInteger DefaultCapacity = 10;
+static const NSUInteger DefaultLimit = 10;
 
 @interface Node : NSObject
 
@@ -58,10 +58,19 @@ static const NSUInteger DefaultCapacity = 10;
         node.previousNode = nil;
         node.nextNode = nil;
     } else {
-        node.nextNode = _firstNode;
-        _firstNode.previousNode = node;
-        _firstNode = node;
+        [self insertObject:node beforeObject:_firstNode];
     }
+}
+
+- (void)insertObject:(Node *)newNode beforeObject:(Node *)node {
+    newNode.previousNode = node.previousNode;
+    newNode.nextNode = node;
+    if (!node.previousNode) {
+        _firstNode = newNode;
+    } else {
+        node.previousNode.nextNode = newNode;
+    }
+    node.previousNode = newNode;
 }
 
 - (void)removeObject:(Node *)node {
@@ -136,12 +145,15 @@ static const NSUInteger DefaultCapacity = 10;
 @property (nonatomic) NSMutableDictionary *dictionary;
 @property (nonatomic) List *list;
 
+@property (nonatomic) NSURLSession *session;
+@property (nonatomic) NSMutableDictionary *tasks;
+
 @end
 
 @implementation SimpleCache
 
 - (instancetype)init {
-    return [self initWithLimit:DefaultCapacity];
+    return [self initWithLimit:DefaultLimit];
 }
 
 - (instancetype)initWithLimit:(NSUInteger)limit {
@@ -152,6 +164,9 @@ static const NSUInteger DefaultCapacity = 10;
         
         _limit = limit;
         
+        _session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+        _tasks = [[NSMutableDictionary alloc] init];
+        
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didReceiveMemoryWarning:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
     }
     return self;
@@ -160,6 +175,8 @@ static const NSUInteger DefaultCapacity = 10;
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
 }
+
+#pragma mark -
 
 - (id)objectForKey:(id)key {
     return [self objectForKeyedSubscript:key];
@@ -212,6 +229,8 @@ static const NSUInteger DefaultCapacity = 10;
     }
 }
 
+#pragma mark -
+
 - (void)removeObjectForKey:(id)key {
     if (!key) {
         return;
@@ -232,6 +251,8 @@ static const NSUInteger DefaultCapacity = 10;
         [_list removeAllObjects];
     }
 }
+
+#pragma mark -
 
 - (NSUInteger)count {
     @synchronized(self) {
@@ -255,6 +276,68 @@ static const NSUInteger DefaultCapacity = 10;
     }
 }
 
+#pragma mark -
+
+- (UIImage *)imageWithURL:(NSURL *)imageURL placeholderImage:(UIImage *)placeholderImage completionHandler:(void (^)(UIImage *image, NSURL *imageURL, NSError *error))completionHandler {
+    if (!imageURL) {
+        return placeholderImage;
+    }
+    
+    UIImage *cachedImage = self[imageURL.absoluteString];
+    if (cachedImage) {
+        return cachedImage;
+    }
+    
+    @synchronized(self) {
+        NSURLSessionTask *task = [_session dataTaskWithURL:imageURL completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+            UIImage *image;
+            if (!error && data) {
+                UIImage *downloadedImage = [UIImage imageWithData:data];
+                if (downloadedImage) {
+                    self[imageURL.absoluteString] = downloadedImage;
+                    image = downloadedImage;
+                }
+            }
+            
+            if (completionHandler) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completionHandler(image, imageURL, error);
+                });
+            }
+            
+            [_tasks removeObjectForKey:imageURL.absoluteString];
+        }];
+        [task resume];
+        
+        _tasks[imageURL.absoluteString] = task;
+        
+        return placeholderImage;
+    }
+}
+
+- (void)cancelDownloadURL:(NSURL *)downloadURL {
+    NSString *key = downloadURL.absoluteString;
+    if (!key) {
+        return;
+    }
+    
+    @synchronized(self) {
+        NSURLSessionTask *task = _tasks[key];
+        [task cancel];
+        
+        [_tasks removeObjectForKey:key];
+    }
+}
+
+- (void)cancelAllDownloads {
+    @synchronized(self) {
+        [_tasks.allValues makeObjectsPerformSelector:@selector(cancel)];
+        [_tasks removeAllObjects];
+    }
+}
+
+#pragma mark -
+
 - (id)peekObjectForKey:(id)key {
     @synchronized(self) {
         return _dictionary[key];
@@ -264,7 +347,6 @@ static const NSUInteger DefaultCapacity = 10;
 - (void)didReceiveMemoryWarning:(NSNotification *)notification {
     [self removeAllObjects];
 }
-
 
 #pragma mark -
 

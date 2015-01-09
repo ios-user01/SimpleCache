@@ -30,4 +30,9 @@
 
 - (id)peekObjectForKey:(id)key;
 
+- (UIImage *)imageWithURL:(NSURL *)imageURL placeholderImage:(UIImage *)placeholderImage completionHandler:(void (^)(UIImage *image, NSURL *imageURL, NSError *error))completionHandler;
+
+- (void)cancelDownloadURL:(NSURL *)downloadURL;
+- (void)cancelAllDownloads;
+
 @end
