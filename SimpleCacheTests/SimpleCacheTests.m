@@ -248,6 +248,17 @@
     XCTAssertNil([cache objectForKey:key]);
 }
 
+- (void)testRemoveNil {
+    SimpleCache *cache = [[SimpleCache alloc] init];
+    
+    cache[@"KEY_1"] = @"VALUE_1";
+    NSString *key = nil;
+    [cache removeObjectForKey:key];
+    
+    XCTAssertEqualObjects(cache[@"KEY_1"], @"VALUE_1");
+    XCTAssertEqual(cache.count, 1);
+}
+
 - (void)testAllKeys {
     SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
     
@@ -272,6 +283,20 @@
     NSArray *allValues = cache.allValues;
     
     XCTAssertEqualObjects(allValues, (@[@"VALUE_3", @"VALUE_2"]));
+}
+
+- (void)testDescription1 {
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
+    
+    cache[@"KEY_1"] = @"VALUE_1";
+    cache[@"KEY_2"] = @"VALUE_2";
+    
+    XCTAssertEqualObjects(cache.description, @"(\n    [KEY_2: VALUE_2],\n    [KEY_1: VALUE_1],\n)");
+}
+
+- (void)testDescription2 {
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
+    XCTAssertEqualObjects(cache.description, @"(\n)");
 }
 
 - (void)testThreadSafety1 {
