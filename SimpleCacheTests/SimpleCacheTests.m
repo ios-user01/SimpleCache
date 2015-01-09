@@ -299,6 +299,21 @@
     XCTAssertEqualObjects(cache.description, @"(\n)");
 }
 
+- (void)testMemoryWarning {
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
+    
+    cache[@"KEY_1"] = @"VALUE_1";
+    cache[@"KEY_2"] = @"VALUE_2";
+    cache[@"KEY_3"] = @"VALUE_3";
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidReceiveMemoryWarningNotification object:nil];
+    
+    XCTAssertNil(cache[@"KEY_1"]);
+    XCTAssertNil(cache[@"KEY_2"]);
+    XCTAssertNil(cache[@"KEY_3"]);
+    XCTAssertEqual(cache.count, 0);
+}
+
 - (void)testThreadSafety1 {
     SimpleCache *cache = [[SimpleCache alloc] init];
     
