@@ -24,22 +24,19 @@
     [super tearDown];
 }
 
-// To get a sense of your problem-solving skills, we’d like to ask you to build
-// a thread-safe, in-memory LRU cache with a maximum item count of 10.
-// You can do this in either Objective-C or Swift, but be prepared to justify your decision!
-//
-// Design priorities should be:
-// 1. Should perform well as a web image cache, (avg ~1MB)
-// 2. Should be well tested
-// 3. Simplicity of API
-// 4. Overall performance
-// 5. Thread safety
-
-- (void)testSet {
+- (void)testSet1 {
     SimpleCache *cache = [[SimpleCache alloc] init];
     
     cache[@"KEY_1"] = @"VALUE_1";
     XCTAssertEqualObjects(cache[@"KEY_1"], @"VALUE_1");
+    XCTAssertEqual(cache.count, 1);
+}
+
+- (void)testSet2 {
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
+    
+    [cache setObject:@"VALUE_1" forKey:@"KEY_1"];
+    XCTAssertEqualObjects([cache objectForKey:@"KEY_1"], @"VALUE_1");
     XCTAssertEqual(cache.count, 1);
 }
 
@@ -217,6 +214,64 @@
     XCTAssertNil(cache[@"KEY_3"]);
     
     XCTAssertEqual(cache.count, 0);
+}
+
+- (void)testSetNil1 {
+    SimpleCache *cache = [[SimpleCache alloc] init];
+    
+    cache[@"KEY_1"] = @"VALUE_1";
+    cache[@"KEY_1"] = nil;
+    XCTAssertEqualObjects(cache[@"KEY_1"], @"VALUE_1");
+    XCTAssertEqual(cache.count, 1);
+}
+
+- (void)testSetNil2 {
+    SimpleCache *cache = [[SimpleCache alloc] init];
+    
+    [cache setObject:@"VALUE_1" forKey:@"KEY_1"];
+    [cache setObject:nil forKey:@"KEY_1"];
+    XCTAssertEqualObjects([cache objectForKey:@"KEY_1"], @"VALUE_1");
+    XCTAssertEqual(cache.count, 1);
+}
+
+- (void)testGetNil1 {
+    SimpleCache *cache = [[SimpleCache alloc] init];
+    
+    NSString *key = nil;
+    XCTAssertNil(cache[key]);
+}
+
+- (void)testGetNil2 {
+    SimpleCache *cache = [[SimpleCache alloc] init];
+    
+    NSString *key = nil;
+    XCTAssertNil([cache objectForKey:key]);
+}
+
+- (void)testAllKeys {
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
+    
+    cache[@"KEY_1"] = @"VALUE_1";
+    cache[@"KEY_2"] = @"VALUE_2";
+    cache[@"KEY_3"] = @"VALUE_3";
+    
+    NSArray *allKeys = cache.allKeys;
+    
+    XCTAssertEqual(allKeys.count, 2);
+    XCTAssertTrue([allKeys indexOfObject:@"KEY_3"] != NSNotFound);
+    XCTAssertTrue([allKeys indexOfObject:@"KEY_2"] != NSNotFound);
+}
+
+- (void)testAllValues {
+    SimpleCache *cache = [[SimpleCache alloc] initWithLimit:2];
+    
+    cache[@"KEY_1"] = @"VALUE_1";
+    cache[@"KEY_2"] = @"VALUE_2";
+    cache[@"KEY_3"] = @"VALUE_3";
+    
+    NSArray *allValues = cache.allValues;
+    
+    XCTAssertEqualObjects(allValues, (@[@"VALUE_3", @"VALUE_2"]));
 }
 
 - (void)testThreadSafety {
