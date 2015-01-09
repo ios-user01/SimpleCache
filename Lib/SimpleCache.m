@@ -8,7 +8,7 @@
 
 #import "SimpleCache.h"
 
-static const NSUInteger DefaultCapacity = 10;
+static const NSUInteger DefaultLimit = 10;
 
 @interface Node : NSObject
 
@@ -58,10 +58,19 @@ static const NSUInteger DefaultCapacity = 10;
         node.previousNode = nil;
         node.nextNode = nil;
     } else {
-        node.nextNode = _firstNode;
-        _firstNode.previousNode = node;
-        _firstNode = node;
+        [self insertObject:node beforeObject:_firstNode];
     }
+}
+
+- (void)insertObject:(Node *)newNode beforeObject:(Node *)node {
+    newNode.previousNode = node.previousNode;
+    newNode.nextNode = node;
+    if (!node.previousNode) {
+        _firstNode = newNode;
+    } else {
+        node.previousNode.nextNode = newNode;
+    }
+    node.previousNode = newNode;
 }
 
 - (void)removeObject:(Node *)node {
@@ -144,7 +153,7 @@ static const NSUInteger DefaultCapacity = 10;
 @implementation SimpleCache
 
 - (instancetype)init {
-    return [self initWithLimit:DefaultCapacity];
+    return [self initWithLimit:DefaultLimit];
 }
 
 - (instancetype)initWithLimit:(NSUInteger)limit {
@@ -166,6 +175,8 @@ static const NSUInteger DefaultCapacity = 10;
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
 }
+
+#pragma mark -
 
 - (id)objectForKey:(id)key {
     return [self objectForKeyedSubscript:key];
@@ -218,6 +229,8 @@ static const NSUInteger DefaultCapacity = 10;
     }
 }
 
+#pragma mark -
+
 - (void)removeObjectForKey:(id)key {
     if (!key) {
         return;
@@ -238,6 +251,8 @@ static const NSUInteger DefaultCapacity = 10;
         [_list removeAllObjects];
     }
 }
+
+#pragma mark -
 
 - (NSUInteger)count {
     @synchronized(self) {
@@ -332,7 +347,6 @@ static const NSUInteger DefaultCapacity = 10;
 - (void)didReceiveMemoryWarning:(NSNotification *)notification {
     [self removeAllObjects];
 }
-
 
 #pragma mark -
 
