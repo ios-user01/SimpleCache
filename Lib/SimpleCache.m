@@ -136,6 +136,9 @@ static const NSUInteger DefaultCapacity = 10;
 @property (nonatomic) NSMutableDictionary *dictionary;
 @property (nonatomic) List *list;
 
+@property (nonatomic) NSURLSession *session;
+@property (nonatomic) NSMutableDictionary *tasks;
+
 @end
 
 @implementation SimpleCache
@@ -151,6 +154,9 @@ static const NSUInteger DefaultCapacity = 10;
         _list = [[List alloc] init];
         
         _limit = limit;
+        
+        _session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+        _tasks = [[NSMutableDictionary alloc] init];
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didReceiveMemoryWarning:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
     }
@@ -254,6 +260,68 @@ static const NSUInteger DefaultCapacity = 10;
         return array.copy;
     }
 }
+
+#pragma mark -
+
+- (UIImage *)imageWithURL:(NSURL *)imageURL placeholderImage:(UIImage *)placeholderImage completionHandler:(void (^)(UIImage *image, NSURL *imageURL, NSError *error))completionHandler {
+    if (!imageURL) {
+        return placeholderImage;
+    }
+    
+    UIImage *cachedImage = self[imageURL.absoluteString];
+    if (cachedImage) {
+        return cachedImage;
+    }
+    
+    @synchronized(self) {
+        NSURLSessionTask *task = [_session dataTaskWithURL:imageURL completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+            UIImage *image;
+            if (!error && data) {
+                UIImage *downloadedImage = [UIImage imageWithData:data];
+                if (downloadedImage) {
+                    self[imageURL.absoluteString] = downloadedImage;
+                    image = downloadedImage;
+                }
+            }
+            
+            if (completionHandler) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completionHandler(image, imageURL, error);
+                });
+            }
+            
+            [_tasks removeObjectForKey:imageURL.absoluteString];
+        }];
+        [task resume];
+        
+        _tasks[imageURL.absoluteString] = task;
+        
+        return placeholderImage;
+    }
+}
+
+- (void)cancelDownloadURL:(NSURL *)downloadURL {
+    NSString *key = downloadURL.absoluteString;
+    if (!key) {
+        return;
+    }
+    
+    @synchronized(self) {
+        NSURLSessionTask *task = _tasks[key];
+        [task cancel];
+        
+        [_tasks removeObjectForKey:key];
+    }
+}
+
+- (void)cancelAllDownloads {
+    @synchronized(self) {
+        [_tasks.allValues makeObjectsPerformSelector:@selector(cancel)];
+        [_tasks removeAllObjects];
+    }
+}
+
+#pragma mark -
 
 - (id)peekObjectForKey:(id)key {
     @synchronized(self) {
